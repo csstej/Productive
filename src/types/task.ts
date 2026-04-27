@@ -3,7 +3,6 @@ export const TASK_CATEGORIES = [
   "Music",
   "Drawing",
   "Writing",
-  "Event Game",
   "Game",
   "Business",
 ] as const;
