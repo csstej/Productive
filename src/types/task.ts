@@ -1,13 +1,11 @@
 export const TASK_CATEGORIES = [
-  "Business",
-  "Creative",
-  "Writing",
-  "Drawing",
+  "Sadhana",
   "Music",
-  "Learning",
-  "Admin",
-  "Health",
-  "Other",
+  "Drawing",
+  "Writing",
+  "Event Game",
+  "Game",
+  "Business",
 ] as const;
 
 export type TaskCategory = (typeof TASK_CATEGORIES)[number];

@@ -11,7 +11,7 @@ type TaskFormProps = {
 
 export function TaskForm({ onAddTask }: TaskFormProps) {
   const [title, setTitle] = useState("");
-  const [category, setCategory] = useState<TaskCategory>("Business");
+  const [category, setCategory] = useState<TaskCategory>("Sadhana");
   const [estimatedMinutes, setEstimatedMinutes] = useState(30);
   const [rewardMinutes, setRewardMinutes] = useState(15);
   const [wasSubmitted, setWasSubmitted] = useState(false);
@@ -108,4 +108,3 @@ export function TaskForm({ onAddTask }: TaskFormProps) {
     </form>
   );
 }
-
