@@ -118,6 +118,18 @@ export default function App() {
     }));
   }
 
+  function handleUpdateTask(
+    id: string,
+    updates: Pick<Task, "title" | "category" | "estimatedMinutes" | "rewardMinutes">,
+  ) {
+    setDailyState((current) => ({
+      ...current,
+      tasks: current.tasks.map((task) =>
+        task.id === id ? { ...task, ...updates } : task,
+      ),
+    }));
+  }
+
   function handleResetDay() {
     const nextHistory = upsertDailyHistory(history, dailyState);
     setHistory(nextHistory);
@@ -154,6 +166,7 @@ export default function App() {
         <TaskList
           tasks={dailyState.tasks}
           onToggleTask={handleToggleTask}
+          onUpdateTask={handleUpdateTask}
           onDeleteTask={handleDeleteTask}
         />
       </section>

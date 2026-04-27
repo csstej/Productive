@@ -4,12 +4,17 @@ import { TaskCard } from "./TaskCard";
 type TaskListProps = {
   tasks: Task[];
   onToggleTask: (id: string) => void;
+  onUpdateTask: (
+    id: string,
+    updates: Pick<Task, "title" | "category" | "estimatedMinutes" | "rewardMinutes">,
+  ) => void;
   onDeleteTask: (id: string) => void;
 };
 
 export function TaskList({
   tasks,
   onToggleTask,
+  onUpdateTask,
   onDeleteTask,
 }: TaskListProps) {
   if (tasks.length === 0) {
@@ -28,10 +33,10 @@ export function TaskList({
           key={task.id}
           task={task}
           onToggleTask={onToggleTask}
+          onUpdateTask={onUpdateTask}
           onDeleteTask={onDeleteTask}
         />
       ))}
     </section>
   );
 }
-
