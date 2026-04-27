@@ -442,16 +442,65 @@ p {
   padding-top: 0;
 }
 
-.history-item strong {
+.history-item summary {
+  cursor: pointer;
+  list-style: none;
+}
+
+.history-item summary::-webkit-details-marker {
+  display: none;
+}
+
+.history-item summary::after {
+  content: "Open";
+  display: inline-block;
+  margin-top: 8px;
+  color: #8ccbb7;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.history-item[open] summary::after {
+  content: "Close";
+}
+
+.history-item strong,
+.history-task strong {
   display: block;
   margin-bottom: 4px;
   font-size: 0.95rem;
 }
 
-.history-item p {
+.history-item p,
+.history-task p {
   margin: 0;
   color: #a8a29a;
   font-size: 0.85rem;
+}
+
+.history-detail-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.history-task {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  border: 1px solid #2a2a2a;
+  border-radius: 6px;
+  background: #111111;
+  padding: 10px;
+}
+
+.history-task.is-complete {
+  border-color: rgba(140, 203, 183, 0.35);
+}
+
+.history-task__time {
+  white-space: nowrap;
+  text-align: right;
 }
 
 @media (max-width: 860px) {
@@ -487,6 +536,15 @@ p {
 
   .task-card {
     grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .history-task {
+    grid-template-columns: 1fr;
+  }
+
+  .history-task__time {
+    text-align: left;
+    white-space: normal;
   }
 
   .task-card__actions {

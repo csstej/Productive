@@ -72,16 +72,46 @@ export function HistoryList({ history }: HistoryListProps) {
       ) : null}
       <div className="history-list">
         {history.map((day) => (
-          <article className="history-item" key={day.date}>
-            <div>
-              <strong>{formatDisplayDate(day.date)}</strong>
-              <p>
-                {day.stats.completedTasks}/{day.stats.totalTasks} done -{" "}
-                {formatDuration(day.stats.completedWorkMinutes)} work -{" "}
-                {formatDuration(day.stats.gamingMinutesEarned)} play
-              </p>
+          <details className="history-item" key={day.date}>
+            <summary>
+              <div>
+                <strong>{formatDisplayDate(day.date)}</strong>
+                <p>
+                  {day.stats.completedTasks}/{day.stats.totalTasks} done -{" "}
+                  {formatDuration(day.stats.completedWorkMinutes)} work -{" "}
+                  {formatDuration(day.stats.gamingMinutesEarned)} play
+                </p>
+              </div>
+            </summary>
+
+            <div className="history-detail-list">
+              {day.tasks.map((task) => (
+                <article
+                  className={`history-task${task.completed ? " is-complete" : ""}`}
+                  key={task.id}
+                >
+                  <div>
+                    <strong>{task.title}</strong>
+                    <p>
+                      {task.category} - {task.completed ? "Done" : "Not done"}
+                    </p>
+                  </div>
+                  <p className="history-task__time">
+                    {formatDuration(task.estimatedMinutes)} work
+                    {task.completed
+                      ? ` - ${formatDuration(task.rewardMinutes)} play`
+                      : ""}
+                  </p>
+                </article>
+              ))}
             </div>
-          </article>
+
+            {day.tasks.length === 0 ? (
+              <p>
+                No tasks were saved for this day.
+              </p>
+            ) : null}
+          </details>
         ))}
       </div>
     </section>
