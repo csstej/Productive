@@ -2,11 +2,18 @@ import { useEffect, useMemo, useState } from "react";
 import { RotateCcw } from "lucide-react";
 import { DailyRuleCard } from "./components/DailyRuleCard";
 import { DashboardStats } from "./components/DashboardStats";
+import { HistoryList } from "./components/HistoryList";
 import { TaskForm } from "./components/TaskForm";
 import { TaskList } from "./components/TaskList";
-import type { DailyState, Task } from "./types/task";
+import type { DailyHistory, DailyState, Task } from "./types/task";
 import { createEmptyDailyState, formatDisplayDate, getTodayKey } from "./utils/date";
-import { loadDailyState, saveDailyState } from "./utils/storage";
+import {
+  loadDailyHistory,
+  loadDailyState,
+  saveDailyHistory,
+  saveDailyState,
+  upsertDailyHistory,
+} from "./utils/storage";
 import { calculateDailyStats } from "./utils/stats";
 
 function createTask(
@@ -20,20 +27,44 @@ function createTask(
   };
 }
 
-function getInitialDailyState(): DailyState {
+type InitialAppState = {
+  dailyState: DailyState;
+  history: DailyHistory[];
+};
+
+function getInitialAppState(): InitialAppState {
   const today = getTodayKey();
   const savedState = loadDailyState();
+  const savedHistory = loadDailyHistory();
 
   if (!savedState || savedState.date !== today) {
-    return createEmptyDailyState(today);
+    const history =
+      savedState && savedState.date !== today
+        ? upsertDailyHistory(savedHistory, savedState)
+        : savedHistory;
+
+    saveDailyHistory(history);
+
+    return {
+      dailyState: createEmptyDailyState(today),
+      history,
+    };
   }
 
-  return savedState;
+  return {
+    dailyState: savedState,
+    history: savedHistory,
+  };
 }
 
 export default function App() {
-  const [dailyState, setDailyState] =
-    useState<DailyState>(getInitialDailyState);
+  const [initialAppState] = useState<InitialAppState>(getInitialAppState);
+  const [dailyState, setDailyState] = useState<DailyState>(
+    initialAppState.dailyState,
+  );
+  const [history, setHistory] = useState<DailyHistory[]>(
+    initialAppState.history,
+  );
 
   const stats = useMemo(
     () => calculateDailyStats(dailyState),
@@ -42,6 +73,14 @@ export default function App() {
 
   useEffect(() => {
     saveDailyState(dailyState);
+  }, [dailyState]);
+
+  useEffect(() => {
+    setHistory((currentHistory) => {
+      const nextHistory = upsertDailyHistory(currentHistory, dailyState);
+      saveDailyHistory(nextHistory);
+      return nextHistory;
+    });
   }, [dailyState]);
 
   function handleAddTask(
@@ -80,6 +119,9 @@ export default function App() {
   }
 
   function handleResetDay() {
+    const nextHistory = upsertDailyHistory(history, dailyState);
+    setHistory(nextHistory);
+    saveDailyHistory(nextHistory);
     setDailyState(createEmptyDailyState(getTodayKey()));
   }
 
@@ -115,6 +157,8 @@ export default function App() {
           onDeleteTask={handleDeleteTask}
         />
       </section>
+
+      <HistoryList history={history} />
 
       <DailyRuleCard />
     </main>

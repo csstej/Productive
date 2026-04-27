@@ -40,3 +40,9 @@ export type DailyStats = {
   gamingMinutesRemaining: number;
 };
 
+export type DailyHistory = {
+  date: string;
+  tasks: Task[];
+  stats: DailyStats;
+  savedAt: string;
+};
