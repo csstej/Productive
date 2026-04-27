@@ -1,5 +1,6 @@
 import type { DailyHistory } from "../types/task";
 import { formatDisplayDate } from "../utils/date";
+import { formatDuration } from "../utils/time";
 
 type HistoryListProps = {
   history: DailyHistory[];
@@ -45,12 +46,12 @@ export function HistoryList({ history }: HistoryListProps) {
                   <span
                     className="chart-bar chart-bar--work"
                     style={{ height: `${workHeight}%` }}
-                    title={`${day.stats.completedWorkMinutes} min work`}
+                    title={`${formatDuration(day.stats.completedWorkMinutes)} work`}
                   />
                   <span
                     className="chart-bar chart-bar--play"
                     style={{ height: `${playHeight}%` }}
-                    title={`${day.stats.gamingMinutesEarned} min play`}
+                    title={`${formatDuration(day.stats.gamingMinutesEarned)} play`}
                   />
                 </div>
                 <small>{shortDate}</small>
@@ -76,8 +77,8 @@ export function HistoryList({ history }: HistoryListProps) {
               <strong>{formatDisplayDate(day.date)}</strong>
               <p>
                 {day.stats.completedTasks}/{day.stats.totalTasks} done -{" "}
-                {day.stats.completedWorkMinutes} min work -{" "}
-                {day.stats.gamingMinutesEarned} min play
+                {formatDuration(day.stats.completedWorkMinutes)} work -{" "}
+                {formatDuration(day.stats.gamingMinutesEarned)} play
               </p>
             </div>
           </article>

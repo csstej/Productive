@@ -2,6 +2,7 @@ import { Check, Pencil, Save, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import type { Task, TaskCategory } from "../types/task";
 import { TASK_CATEGORIES } from "../types/task";
+import { formatDuration } from "../utils/time";
 
 type TaskCardProps = {
   task: Task;
@@ -110,8 +111,8 @@ export function TaskCard({
               <span>{task.category}</span>
             </div>
             <div className="task-card__meta">
-              <span>{task.estimatedMinutes}m work</span>
-              <span>{task.rewardMinutes}m play</span>
+              <span>{formatDuration(task.estimatedMinutes)} work</span>
+              <span>{formatDuration(task.rewardMinutes)} play</span>
             </div>
           </>
         )}
