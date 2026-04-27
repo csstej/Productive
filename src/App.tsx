@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { RotateCcw, Sword } from "lucide-react";
+import { RotateCcw } from "lucide-react";
 import { DailyRuleCard } from "./components/DailyRuleCard";
 import { DashboardStats } from "./components/DashboardStats";
 import { TaskForm } from "./components/TaskForm";
@@ -85,11 +85,10 @@ export default function App() {
 
   return (
     <main className="app-shell">
-      <section className="hero-panel">
+      <header className="app-header">
         <div>
-          <p className="eyebrow">Personal quest log</p>
-          <h1>Task Reward Tracker</h1>
-          <p className="hero-panel__date">{formatDisplayDate(dailyState.date)}</p>
+          <h1>Productive</h1>
+          <p>{formatDisplayDate(dailyState.date)}</p>
         </div>
         <button
           className="button button--secondary"
@@ -97,40 +96,27 @@ export default function App() {
           onClick={handleResetDay}
         >
           <RotateCcw size={17} aria-hidden="true" />
-          Reset today
+          Reset
         </button>
-      </section>
+      </header>
 
       <DashboardStats stats={stats} />
 
-      <section className="workspace-grid">
-        <div className="panel">
-          <div className="section-heading">
-            <Sword size={20} aria-hidden="true" />
-            <div>
-              <p className="eyebrow">Plan the next win</p>
-              <h2>Add a quest</h2>
-            </div>
-          </div>
-          <TaskForm onAddTask={handleAddTask} />
-          <DailyRuleCard />
-        </div>
-
-        <div className="panel panel--tasks">
-          <div className="section-heading">
-            <div>
-              <p className="eyebrow">Today</p>
-              <h2>Quest list</h2>
-            </div>
-          </div>
-          <TaskList
-            tasks={dailyState.tasks}
-            onToggleTask={handleToggleTask}
-            onDeleteTask={handleDeleteTask}
-          />
-        </div>
+      <section className="panel">
+        <h2>Add task</h2>
+        <TaskForm onAddTask={handleAddTask} />
       </section>
+
+      <section className="panel">
+        <h2>Today</h2>
+        <TaskList
+          tasks={dailyState.tasks}
+          onToggleTask={handleToggleTask}
+          onDeleteTask={handleDeleteTask}
+        />
+      </section>
+
+      <DailyRuleCard />
     </main>
   );
 }
-
