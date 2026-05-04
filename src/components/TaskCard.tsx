@@ -25,6 +25,7 @@ export function TaskCard({
   const [category, setCategory] = useState<TaskCategory>(task.category);
   const [estimatedMinutes, setEstimatedMinutes] = useState(task.estimatedMinutes);
   const [rewardMinutes, setRewardMinutes] = useState(task.rewardMinutes);
+  const canEdit = !task.editedAt;
 
   function resetDraft() {
     setTitle(task.title);
@@ -41,7 +42,7 @@ export function TaskCard({
   function handleSave() {
     const cleanTitle = title.trim();
 
-    if (!cleanTitle || estimatedMinutes <= 0 || rewardMinutes < 0) {
+    if (!canEdit || !cleanTitle || estimatedMinutes <= 0 || rewardMinutes < 0) {
       return;
     }
 
@@ -142,15 +143,17 @@ export function TaskCard({
           </>
         ) : (
           <>
-            <button
-              className="icon-button"
-              type="button"
-              onClick={() => setIsEditing(true)}
-              aria-label={`Edit ${task.title}`}
-              title="Edit task"
-            >
-              <Pencil size={18} aria-hidden="true" />
-            </button>
+            {canEdit ? (
+              <button
+                className="icon-button"
+                type="button"
+                onClick={() => setIsEditing(true)}
+                aria-label={`Edit ${task.title}`}
+                title="Edit task"
+              >
+                <Pencil size={18} aria-hidden="true" />
+              </button>
+            ) : null}
             <button
               className="icon-button"
               type="button"

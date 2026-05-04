@@ -125,7 +125,9 @@ export default function App() {
     setDailyState((current) => ({
       ...current,
       tasks: current.tasks.map((task) =>
-        task.id === id ? { ...task, ...updates } : task,
+        task.id === id && !task.editedAt
+          ? { ...task, ...updates, editedAt: new Date().toISOString() }
+          : task,
       ),
     }));
   }

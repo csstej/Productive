@@ -18,6 +18,7 @@ export type Task = {
   rewardMinutes: number;
   completed: boolean;
   createdAt: string;
+  editedAt?: string;
   completedAt?: string;
 };
 
