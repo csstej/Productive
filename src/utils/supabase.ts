@@ -10,7 +10,11 @@ function isValidSupabaseUrl(value: string | undefined): value is string {
 
   try {
     const url = new URL(value);
-    return url.protocol === "https:" && url.hostname.endsWith(".supabase.co");
+    return (
+      url.protocol === "https:" &&
+      url.hostname.endsWith(".supabase.co") &&
+      (url.pathname === "/" || url.pathname === "")
+    );
   } catch {
     return false;
   }
