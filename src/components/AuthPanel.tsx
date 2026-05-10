@@ -33,8 +33,10 @@ export function AuthPanel({
     try {
       await onSignIn(email.trim());
       setMessage("Check your email for a login link.");
-    } catch {
-      setMessage("Could not send login link.");
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Could not send login link.";
+      setMessage(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -83,4 +85,3 @@ export function AuthPanel({
     </form>
   );
 }
-
