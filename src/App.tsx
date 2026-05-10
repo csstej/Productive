@@ -102,10 +102,19 @@ export default function App() {
       return;
     }
 
+    const cleanAuthUrl = () => {
+      if (window.location.search || window.location.hash) {
+        window.history.replaceState(null, "", window.location.pathname);
+      }
+    };
+
     supabase.auth.getSession().then(({ data }) => {
       const user = data.session?.user ?? null;
       setUserId(user?.id ?? null);
       setUserEmail(user?.email ?? null);
+      if (user) {
+        cleanAuthUrl();
+      }
     });
 
     const {
@@ -116,6 +125,9 @@ export default function App() {
       setUserEmail(user?.email ?? null);
       setIsRemoteReady(false);
       setSyncStatus(user ? "Loading account" : "Not logged in");
+      if (user) {
+        cleanAuthUrl();
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -157,9 +169,11 @@ export default function App() {
           setIsRemoteReady(true);
           setSyncStatus("Synced");
         }
-      } catch {
+      } catch (error) {
         if (isMounted) {
-          setSyncStatus("Sync error");
+          const message =
+            error instanceof Error ? error.message : "Could not load account";
+          setSyncStatus(`Sync error: ${message}`);
         }
       }
     }
@@ -188,9 +202,11 @@ export default function App() {
             setSyncStatus("Synced");
           }
         })
-        .catch(() => {
+        .catch((error) => {
           if (isMounted) {
-            setSyncStatus("Sync error");
+            const message =
+              error instanceof Error ? error.message : "Could not save account";
+            setSyncStatus(`Sync error: ${message}`);
           }
         });
     }, 350);
@@ -209,7 +225,7 @@ export default function App() {
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: window.location.href,
+        emailRedirectTo: `${window.location.origin}${import.meta.env.BASE_URL}`,
       },
     });
 
@@ -228,6 +244,24 @@ export default function App() {
     setUserEmail(null);
     setIsRemoteReady(false);
     setSyncStatus("Not logged in");
+  }
+
+  async function handleSyncNow() {
+    if (!userId) {
+      return;
+    }
+
+    setSyncStatus("Saving");
+
+    try {
+      await saveRemoteAppData(userId, { dailyState, history });
+      setIsRemoteReady(true);
+      setSyncStatus("Synced");
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Could not save account";
+      setSyncStatus(`Sync error: ${message}`);
+    }
   }
 
   function handleAddTask(
@@ -309,6 +343,7 @@ export default function App() {
         syncStatus={syncStatus}
         onSignIn={handleSignIn}
         onSignOut={handleSignOut}
+        onSyncNow={handleSyncNow}
       />
 
       <DashboardStats stats={stats} />

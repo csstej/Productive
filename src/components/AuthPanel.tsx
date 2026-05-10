@@ -7,6 +7,7 @@ type AuthPanelProps = {
   syncStatus: string;
   onSignIn: (email: string) => Promise<void>;
   onSignOut: () => Promise<void>;
+  onSyncNow: () => Promise<void>;
 };
 
 export function AuthPanel({
@@ -15,6 +16,7 @@ export function AuthPanel({
   syncStatus,
   onSignIn,
   onSignOut,
+  onSyncNow,
 }: AuthPanelProps) {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
@@ -57,6 +59,9 @@ export function AuthPanel({
           <strong>{userEmail}</strong>
           <p>{syncStatus}</p>
         </div>
+        <button className="button button--secondary" type="button" onClick={onSyncNow}>
+          Sync now
+        </button>
         <button className="button button--secondary" type="button" onClick={onSignOut}>
           <LogOut size={17} aria-hidden="true" />
           Sign out
