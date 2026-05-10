@@ -70,6 +70,7 @@ p {
 
 .panel,
 .summary,
+.auth-panel,
 .task-card,
 .empty-state,
 .rule-card {
@@ -105,6 +106,34 @@ p {
 .icon-button {
   border: 1px solid #333333;
   background: #202020;
+}
+
+.auth-panel {
+  display: grid;
+  gap: 10px;
+  align-items: end;
+  margin-bottom: 12px;
+  padding: 14px;
+}
+
+.auth-panel p {
+  margin: 0;
+  color: #a8a29a;
+  font-size: 0.85rem;
+}
+
+.auth-panel strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.95rem;
+}
+
+.auth-form {
+  grid-template-columns: minmax(180px, 1fr) auto minmax(130px, auto);
+}
+
+.auth-panel--signed-in {
+  grid-template-columns: 1fr auto;
 }
 
 .summary {
@@ -506,6 +535,12 @@ p {
 @media (max-width: 860px) {
   .task-form {
     grid-template-columns: 1fr;
+  }
+
+  .auth-form,
+  .auth-panel--signed-in {
+    grid-template-columns: 1fr;
+    align-items: start;
   }
 
   .summary {

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { RotateCcw } from "lucide-react";
+import { AuthPanel } from "./components/AuthPanel";
 import { DailyRuleCard } from "./components/DailyRuleCard";
 import { DashboardStats } from "./components/DashboardStats";
 import { HistoryList } from "./components/HistoryList";
@@ -15,6 +16,8 @@ import {
   upsertDailyHistory,
 } from "./utils/storage";
 import { calculateDailyStats } from "./utils/stats";
+import { loadRemoteAppData, saveRemoteAppData } from "./utils/remoteStorage";
+import { isSupabaseConfigured, supabase } from "./utils/supabase";
 
 function createTask(
   input: Omit<Task, "id" | "completed" | "createdAt" | "completedAt">,
@@ -32,10 +35,11 @@ type InitialAppState = {
   history: DailyHistory[];
 };
 
-function getInitialAppState(): InitialAppState {
+function normalizeAppState(
+  savedState: DailyState | null,
+  savedHistory: DailyHistory[],
+): InitialAppState {
   const today = getTodayKey();
-  const savedState = loadDailyState();
-  const savedHistory = loadDailyHistory();
 
   if (!savedState || savedState.date !== today) {
     const history =
@@ -52,9 +56,13 @@ function getInitialAppState(): InitialAppState {
   }
 
   return {
-    dailyState: savedState,
-    history: savedHistory,
+      dailyState: savedState,
+      history: savedHistory,
   };
+}
+
+function getInitialAppState(): InitialAppState {
+  return normalizeAppState(loadDailyState(), loadDailyHistory());
 }
 
 export default function App() {
@@ -64,6 +72,12 @@ export default function App() {
   );
   const [history, setHistory] = useState<DailyHistory[]>(
     initialAppState.history,
+  );
+  const [userId, setUserId] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [isRemoteReady, setIsRemoteReady] = useState(false);
+  const [syncStatus, setSyncStatus] = useState(
+    isSupabaseConfigured ? "Not logged in" : "Local only",
   );
 
   const stats = useMemo(
@@ -82,6 +96,139 @@ export default function App() {
       return nextHistory;
     });
   }, [dailyState]);
+
+  useEffect(() => {
+    if (!supabase) {
+      return;
+    }
+
+    supabase.auth.getSession().then(({ data }) => {
+      const user = data.session?.user ?? null;
+      setUserId(user?.id ?? null);
+      setUserEmail(user?.email ?? null);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      const user = session?.user ?? null;
+      setUserId(user?.id ?? null);
+      setUserEmail(user?.email ?? null);
+      setIsRemoteReady(false);
+      setSyncStatus(user ? "Loading account" : "Not logged in");
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    if (!userId) {
+      setIsRemoteReady(false);
+      return;
+    }
+
+    let isMounted = true;
+    const activeUserId = userId;
+
+    async function loadAccountData() {
+      setSyncStatus("Loading account");
+
+      try {
+        const remoteData = await loadRemoteAppData(activeUserId);
+
+        if (!isMounted) {
+          return;
+        }
+
+        if (remoteData) {
+          const normalized = normalizeAppState(
+            remoteData.dailyState,
+            remoteData.history,
+          );
+          setDailyState(normalized.dailyState);
+          setHistory(normalized.history);
+          saveDailyState(normalized.dailyState);
+          saveDailyHistory(normalized.history);
+        } else {
+          await saveRemoteAppData(activeUserId, { dailyState, history });
+        }
+
+        if (isMounted) {
+          setIsRemoteReady(true);
+          setSyncStatus("Synced");
+        }
+      } catch {
+        if (isMounted) {
+          setSyncStatus("Sync error");
+        }
+      }
+    }
+
+    loadAccountData();
+
+    return () => {
+      isMounted = false;
+    };
+    // Only run when the account changes; current local state is used for first upload.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId]);
+
+  useEffect(() => {
+    if (!userId || !isRemoteReady) {
+      return;
+    }
+
+    let isMounted = true;
+    setSyncStatus("Saving");
+
+    const timeoutId = window.setTimeout(() => {
+      saveRemoteAppData(userId, { dailyState, history })
+        .then(() => {
+          if (isMounted) {
+            setSyncStatus("Synced");
+          }
+        })
+        .catch(() => {
+          if (isMounted) {
+            setSyncStatus("Sync error");
+          }
+        });
+    }, 350);
+
+    return () => {
+      isMounted = false;
+      window.clearTimeout(timeoutId);
+    };
+  }, [dailyState, history, isRemoteReady, userId]);
+
+  async function handleSignIn(email: string) {
+    if (!supabase) {
+      return;
+    }
+
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        emailRedirectTo: window.location.href,
+      },
+    });
+
+    if (error) {
+      throw error;
+    }
+  }
+
+  async function handleSignOut() {
+    if (!supabase) {
+      return;
+    }
+
+    await supabase.auth.signOut();
+    setUserId(null);
+    setUserEmail(null);
+    setIsRemoteReady(false);
+    setSyncStatus("Not logged in");
+  }
 
   function handleAddTask(
     taskInput: Omit<Task, "id" | "completed" | "createdAt" | "completedAt">,
@@ -155,6 +302,14 @@ export default function App() {
           Reset
         </button>
       </header>
+
+      <AuthPanel
+        isConfigured={isSupabaseConfigured}
+        userEmail={userEmail}
+        syncStatus={syncStatus}
+        onSignIn={handleSignIn}
+        onSignOut={handleSignOut}
+      />
 
       <DashboardStats stats={stats} />
 
