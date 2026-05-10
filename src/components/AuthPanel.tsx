@@ -4,6 +4,7 @@ import { LogIn, LogOut } from "lucide-react";
 type AuthPanelProps = {
   isConfigured: boolean;
   userEmail: string | null;
+  redirectUrl: string;
   syncStatus: string;
   onSignIn: (email: string) => Promise<void>;
   onSignOut: () => Promise<void>;
@@ -13,6 +14,7 @@ type AuthPanelProps = {
 export function AuthPanel({
   isConfigured,
   userEmail,
+  redirectUrl,
   syncStatus,
   onSignIn,
   onSignOut,
@@ -87,6 +89,7 @@ export function AuthPanel({
         {isSubmitting ? "Sending" : "Log in"}
       </button>
       <p>{message || syncStatus}</p>
+      <p className="auth-return-url">Returns to {redirectUrl}</p>
     </form>
   );
 }

@@ -65,6 +65,14 @@ function getInitialAppState(): InitialAppState {
   return normalizeAppState(loadDailyState(), loadDailyHistory());
 }
 
+function getAuthRedirectUrl(): string {
+  if (window.location.hostname === "csstej.github.io") {
+    return "https://csstej.github.io/Productive/";
+  }
+
+  return `${window.location.origin}${import.meta.env.BASE_URL}`;
+}
+
 export default function App() {
   const [initialAppState] = useState<InitialAppState>(getInitialAppState);
   const [dailyState, setDailyState] = useState<DailyState>(
@@ -79,6 +87,7 @@ export default function App() {
   const [syncStatus, setSyncStatus] = useState(
     isSupabaseConfigured ? "Not logged in" : "Local only",
   );
+  const authRedirectUrl = getAuthRedirectUrl();
 
   const stats = useMemo(
     () => calculateDailyStats(dailyState),
@@ -225,7 +234,7 @@ export default function App() {
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: `${window.location.origin}${import.meta.env.BASE_URL}`,
+        emailRedirectTo: authRedirectUrl,
       },
     });
 
@@ -340,6 +349,7 @@ export default function App() {
       <AuthPanel
         isConfigured={isSupabaseConfigured}
         userEmail={userEmail}
+        redirectUrl={authRedirectUrl}
         syncStatus={syncStatus}
         onSignIn={handleSignIn}
         onSignOut={handleSignOut}
